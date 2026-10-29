@@ -1,0 +1,13 @@
+# Optional: deploy with `npx wrangler deploy` from this folder instead of `npm run deploy-worker`.
+name = "ai-gateway-chat"
+main = "index.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[ai]
+binding = "AI"
+
+[vars]
+GATEWAY_ID = "my-app-gateway"
+MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8"
+ALLOWED_ORIGINS = "https://benppruden.github.io"
