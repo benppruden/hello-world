@@ -1,0 +1,13 @@
+{
+  "name": "cf-ai-gateway-app",
+  "version": "1.0.0",
+  "description": "Chat app that runs Cloudflare Workers AI models through Cloudflare AI Gateway",
+  "type": "module",
+  "scripts": {
+    "setup-gateway": "node scripts/create-gateway.js",
+    "ask": "node scripts/ask.js",
+    "start": "node src/server.js",
+    "test": "node --test"
+  },
+  "engines": { "node": ">=18" }
+}

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Gateway Chat</title>
+<style>
+  :root { --bg:#fafafa; --fg:#1a1a1a; --muted:#666; --card:#fff; --accent:#f38020; --border:#ddd; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#141414; --fg:#eee; --muted:#999; --card:#1f1f1f; --border:#333; } }
+  * { box-sizing: border-box; }
+  body { margin:0; font:16px/1.5 system-ui,sans-serif; background:var(--bg); color:var(--fg); }
+  main { max-width:720px; margin:0 auto; padding:16px; display:flex; flex-direction:column; height:100vh; }
+  h1 { font-size:1.2rem; margin:0 0 12px; }
+  #log { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
+  .msg { padding:10px 12px; border-radius:10px; background:var(--card); border:1px solid var(--border); white-space:pre-wrap; }
+  .user { align-self:flex-end; background:var(--accent); color:#fff; border:none; }
+  .meta { font-size:.75rem; color:var(--muted); }
+  form { display:flex; gap:8px; margin-top:12px; }
+  input { flex:1; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--fg); font:inherit; }
+  button { padding:10px 16px; border:none; border-radius:8px; background:var(--accent); color:#fff; font:inherit; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Chat via Cloudflare AI Gateway</h1>
+  <div id="log"></div>
+  <form id="f"><input id="q" placeholder="Ask something…" autocomplete="off" required><button>Send</button></form>
+</main>
+<script>
+  const messages = [];
+  const log = document.getElementById('log');
+  function add(role, text, meta) {
+    const d = document.createElement('div');
+    d.className = 'msg ' + role; d.textContent = text;
+    if (meta) { const m = document.createElement('div'); m.className = 'meta'; m.textContent = meta; d.append(m); }
+    log.append(d); log.scrollTop = log.scrollHeight;
+  }
+  document.getElementById('f').onsubmit = async (e) => {
+    e.preventDefault();
+    const q = document.getElementById('q'); const text = q.value.trim(); if (!text) return;
+    q.value = ''; messages.push({ role: 'user', content: text }); add('user', text);
+    try {
+      const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages }) });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error);
+      messages.push({ role: 'assistant', content: data.reply });
+      add('assistant', data.reply, data.cached ? 'cached by gateway' : '');
+    } catch (err) { messages.pop(); add('assistant', 'Error: ' + err.message); }
+  };
+</script>
+</body>
+</html>
